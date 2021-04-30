@@ -17,8 +17,7 @@ nbur = 50000
 list(R = list(V = 1, nu = 50), 
      G = list(G1 = list(V = 1, nu = 1, alpha.mu = 0, alpha.V = 500), 
               G2 = list(V = 1, nu = 1, alpha.mu = 0, alpha.V = 500),
-              G3 = list(V = 1, nu = 1, alpha.mu = 0, alpha.V = 500),
-              G4 = list(V = 1, nu = 1, alpha.mu = 0, alpha.V = 500)
+              G3 = list(V = 1, nu = 1, alpha.mu = 0, alpha.V = 500)
      )) -> 
   priors
 
@@ -37,7 +36,7 @@ read.csv("data/germination.csv") %>%
 MCMCglmm::MCMCglmm(cbind(Germinated, Germinable - Germinated) ~ scale(Scarification) + 
                      scale(Stratification) + scale(GA3) + scale(Tmean) + 
                      scale(Alternating) + scale(Light), 
-                   random = ~ animal + ID + Reference + Population:Reference, 
+                   random = ~ animal + Reference + Population:Reference, 
                    family = "multinomial2", pedigree = nnls_orig, prior = priors, data = data,
                    nitt = nite, thin = nthi, burnin = nbur, 
                    verbose = FALSE, saveX = FALSE, saveZ = FALSE, saveXL = FALSE, 
@@ -54,7 +53,7 @@ data %>% filter(Family == "Poaceae") -> poaceaedf
 MCMCglmm::MCMCglmm(cbind(Germinated, Germinable - Germinated) ~ scale(Scarification) + 
                      scale(Stratification) + scale(GA3) + scale(Tmean) + 
                      scale(Alternating) + scale(Light), 
-                   random = ~ animal + ID + Reference + Population:Reference, 
+                   random = ~ animal + Reference + Population:Reference, 
                    family = "multinomial2", pedigree = nnls_orig, prior = priors, data = poaceaedf,
                    nitt = nite, thin = nthi, burnin = nbur, 
                    verbose = FALSE, saveX = FALSE, saveZ = FALSE, saveXL = FALSE, 
@@ -71,7 +70,7 @@ data %>% filter(Family == "Leguminosae") -> leguminosaedf
 MCMCglmm::MCMCglmm(cbind(Germinated, Germinable - Germinated) ~ scale(Scarification) + 
                      scale(Stratification) + scale(GA3) + scale(Tmean) + 
                      scale(Alternating) + scale(Light), 
-                   random = ~ animal + ID + Reference + Population:Reference, 
+                   random = ~ animal + Reference + Population:Reference, 
                    family = "multinomial2", pedigree = nnls_orig, prior = priors, data = leguminosaedf,
                    nitt = nite, thin = nthi, burnin = nbur, 
                    verbose = FALSE, saveX = FALSE, saveZ = FALSE, saveXL = FALSE, 
@@ -88,7 +87,7 @@ data %>% filter(! Family %in% c("Poaceae", "Leguminosae")) -> restdf
 MCMCglmm::MCMCglmm(cbind(Germinated, Germinable - Germinated) ~ scale(Scarification) + 
                      scale(Stratification) + scale(GA3) + scale(Tmean) + 
                      scale(Alternating) + scale(Light), 
-                   random = ~ animal + ID + Reference + Population:Reference, 
+                   random = ~ animal + Reference + Population:Reference, 
                    family = "multinomial2", pedigree = nnls_orig, prior = priors, data = restdf,
                    nitt = nite, thin = nthi, burnin = nbur, 
                    verbose = FALSE, saveX = FALSE, saveZ = FALSE, saveXL = FALSE, 

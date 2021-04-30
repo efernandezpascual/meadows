@@ -3,13 +3,12 @@ README.md
 
 ![Hay meadow from the Cantabrian Mountains](meadow.JPG)
 
-# Seed germination ecology of species-rich mesic grasslands (*Arrhenatheretalia*)
+# Seed germination ecology of European mesic grasslands
 
 This repository stores all the information related to the manuscript
-*Seed germination ecology of species-rich mesic grasslands
-(Arrhenatheretalia)*, including the raw datasets, the scripts to perform
-data cleaning and analysis, and the `Rmarkdown` files to create the
-manuscript.
+*Seed germination ecology of European mesic grasslands*, including the
+raw datasets, the scripts to perform data cleaning and analysis, and the
+`Rmarkdown` files to create the manuscript.
 
 ## Contents
 

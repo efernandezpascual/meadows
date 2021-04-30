@@ -7,8 +7,9 @@ load("../results/models/allspp.RData")
 # Calculate numbers
 
 germination %>% pull(Taxon) %>% length -> MSrecords
-germination %>% pull(Taxon) %>% unique %>% length -> MSspecies
-sum(germination$Number_seeds) -> MSseeds
+germination %>% pull(Taxon) %>% unique %>% length -> MSspeciesN
+germination %>% pull(Country) %>% unique %>% length -> MScountries
+sum(germination$Germinable) -> MSseedsN
 min(germination$Tmean) -> MSminT
 max(germination$Tmean) -> MSmaxT
 germination %>% filter(Alternating == 1) %>% pull(Taxon) %>% length -> MSaltY
@@ -54,17 +55,13 @@ summary(allspp)$Gcovariances[1, 1] %>% round(2) -> MSphylo
 summary(allspp)$Gcovariances[1, 2] %>% round(2) -> MSphylol
 summary(allspp)$Gcovariances[1, 3] %>% round(2) -> MSphyloh
 
-summary(allspp)$Gcovariances[2, 1] %>% round(2) -> MSspecies
-summary(allspp)$Gcovariances[2, 2] %>% round(2) -> MSspeciesl
-summary(allspp)$Gcovariances[2, 3] %>% round(2) -> MSspeciesh
+summary(allspp)$Gcovariances[3, 1] %>% round(2) -> MSpopulation
+summary(allspp)$Gcovariances[3, 2] %>% round(2) -> MSpopulationl
+summary(allspp)$Gcovariances[3, 3] %>% round(2) -> MSpopulationh
 
-summary(allspp)$Gcovariances[4, 1] %>% round(2) -> MSpopulation
-summary(allspp)$Gcovariances[4, 2] %>% round(2) -> MSpopulationl
-summary(allspp)$Gcovariances[4, 3] %>% round(2) -> MSpopulationh
-
-summary(allspp)$Gcovariances[3, 1] %>% round(2) -> MSsource
-summary(allspp)$Gcovariances[3, 2] %>% round(2) -> MSsourcel
-summary(allspp)$Gcovariances[3, 3] %>% round(2) -> MSsourceh
+summary(allspp)$Gcovariances[2, 1] %>% round(2) -> MSsource
+summary(allspp)$Gcovariances[2, 2] %>% round(2) -> MSsourcel
+summary(allspp)$Gcovariances[2, 3] %>% round(2) -> MSsourceh
 
 # PCA numbers
 

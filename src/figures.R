@@ -16,13 +16,13 @@ read.csv("data/traits.csv") %>%
   mutate(Family = fct_relevel(Family, c("Poaceae", "Fabaceae", "Others"))) %>%
   mutate(Trait = fct_relevel(Trait, c("Seed.mass", "Length", "Shape"))) %>%
   mutate(Trait = fct_recode(Trait, 
-                            "Seed mass (mg)" = "Seed.mass",
-                            "Seed length (mm)" = "Length",
-                            "Seed shape (length / width)" = "Shape")) %>%
-  ggplot(aes(Family, Value, color = Family, fill = Family)) + 
+                            "Seed mass (log)" = "Seed.mass",
+                            "Seed length (log)" = "Length",
+                            "Seed shape (length / width, log)" = "Shape")) %>%
+  ggplot(aes(Family, log(Value), color = Family, fill = Family)) + 
   geom_violin(alpha = 0.5, draw_quantiles = c(0.25, 0.5, 0.75)) +
   facet_wrap( ~ Trait, strip.position = "left", scales = "free_y") +
-  scale_y_continuous(labels = scales::number_format(accuracy = 1)) +
+  scale_y_continuous(labels = scales::number_format(accuracy = .1)) +
   ggthemes::theme_tufte() +
   theme(panel.background = element_rect(color = "grey96", fill = "grey96"),
         strip.text = element_text(size = 12, color = "black"),
@@ -142,6 +142,9 @@ read.csv("data/germination.csv") %>%
 ## Do PCA
 
 traits %>%
+  gather(Trait, Value, Temperature:Seed.mass) %>%
+  mutate(Value = log(0.01+ Value)) %>%
+  spread(Trait, Value) %>%
   select(-c(Taxon, Family)) %>%
   FactoMineR::PCA(graph = FALSE) -> pca
 
