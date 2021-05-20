@@ -12,6 +12,7 @@ read.csv("data/traits.csv") %>%
          Family = ifelse(Family %in% "Leguminosae", "Fabaceae", Family),
          Shape = Length / Width) %>%
   select(-Width) %>%
+  select(-Length) %>%
   gather(Trait, Value, Seed.mass:Shape) %>%
   mutate(Family = fct_relevel(Family, c("Poaceae", "Fabaceae", "Others"))) %>%
   mutate(Trait = fct_relevel(Trait, c("Seed.mass", "Length", "Shape"))) %>%
@@ -184,3 +185,160 @@ ggplot(pcaInds, aes(x = Dim.1, y = Dim.2)) +
 
 ggsave(f3, file = "results/figures/pca.png", 
        path = NULL, scale = 1, width = 100, height = 100, units = "mm", dpi = 600)
+
+# Figure other habitats
+
+read.csv("data/others.csv") %>%
+  select(-c(C14, C22, C30)) -> others
+
+read.csv("data/germination.csv") %>%
+  filter(Reference == "SOSPRADERAS") %>%
+  filter(GA3 == 0) %>%
+  merge(read.csv("data/traits.csv")) %>%
+  filter((Family == "Leguminosae" & Scarification == 1) | Family != "Leguminosae") %>%
+  group_by(Taxon, Seed.mass, Tmean) %>%
+  summarise(G = sum(Germinated) / sum(Germinable)) %>%
+  spread(Tmean, G) %>%
+  group_by(Taxon) %>%
+  mutate(Habitat = "Mesic grasslands") %>%
+  rename(F14 = `9`, F22 = `17`, F30 = `25`) %>%
+  select(Taxon, Habitat, Seed.mass:F30) %>%
+  rbind(others) %>%
+  group_by() -> df1
+
+## Do PCA
+
+df1 %>%
+  select(-c(Taxon, Habitat, Seed.mass)) %>%
+  FactoMineR::PCA(graph = FALSE, scale = FALSE) -> pca
+
+df1 %>%
+  select(c(Taxon, Habitat)) %>%
+  cbind(pca$ind$coord[, 1:2]) -> pcaInds
+
+pca$var$coord[, 1:2] %>%
+  data.frame %>%
+  rownames_to_column(var = "Variable") %>%
+  mutate(Variable = fct_recode(Variable, `22/12 ºC` = "F22", 
+                               `30/20 ºC` = "F30", `14/4 ºC` = "F14")) -> pcaVars
+
+cent <- aggregate(cbind(Dim.1, Dim.2) ~ Habitat, data = pcaInds, FUN = mean)
+segs <- merge(pcaInds, setNames(cent, c("Habitat", "oDCA1", "oDCA2")), by = "Habitat", sort = FALSE)
+
+## Plot PCA
+
+ggplot(pcaInds, aes(x = Dim.1, y = Dim.2)) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_vline(xintercept = 0, linetype = "dashed") +
+  geom_segment(data = pcaVars, aes(x = 0, y = 0, xend = 3*Dim.1, yend = 3*Dim.2), size = 0.3) +
+  geom_label(data = pcaVars, aes(x = 3*Dim.1, y = 3*Dim.2, label = Variable), size = 4) +
+  # geom_text(aes(color = Family, label = Taxon), alpha = 0.8, size = 2.5) +
+  geom_segment(data = segs, mapping = aes(xend = oDCA1, yend = oDCA2, color = Habitat), show.legend = F, alpha = 0.5) +
+  geom_point(data = cent, size = 6, aes(color = Habitat), show.legend = T) + 
+  #geom_point(aes(color = Habitat), alpha = 0.8, size = 4) +
+  ggthemes::theme_tufte() + 
+  theme(legend.position = "top",
+        panel.background = element_rect(color = "grey96", fill = "grey96"),
+        legend.text = element_text(size = 12, color = "black"),
+        legend.title = element_blank(),
+        axis.text = element_text(size = 12, color = "black"),
+        axis.title = element_text(size = 12, color = "black")) +
+  scale_x_continuous(name = paste("Axis 1 (", round(pca$eig[1, 2], 0),
+                                  "% variance explained)", sep = "")) + 
+  scale_y_continuous(name = paste("Axis 2 (", round(pca$eig[2, 2], 0), 
+                                  "% variance explained)", sep = "")) +
+  coord_cartesian(xlim = c(-.9, 1.2), ylim = c(-.65, .65)) +
+  geom_segment(
+    x = -0.4, y = -0.6,
+    xend = 0.4, yend = -0.6,
+    lineend = "round", # See available arrow types in example above
+    linejoin = "mitre",
+    size = 1, 
+    arrow = arrow(length = unit(0.1, "inches")),
+    colour = "grey50" # Also accepts "red", "blue' etc
+  ) +
+  geom_segment(
+    x = 0.4, y = -0.6,
+    xend = -0.4, yend = -0.6,
+    lineend = "round", # See available arrow types in example above
+    linejoin = "mitre",
+    size = 1, 
+    arrow = arrow(length = unit(0.1, "inches")),
+    colour = "grey50" # Also accepts "red", "blue' etc
+  ) +
+  geom_segment(
+    x = -0.75, y = -0.3,
+    xend = -0.75, yend = 0.3,
+    lineend = "round", # See available arrow types in example above
+    linejoin = "mitre",
+    size = 1, 
+    arrow = arrow(length = unit(0.1, "inches")),
+    colour = "grey50" # Also accepts "red", "blue' etc
+  ) +
+  geom_segment(
+    x = -0.75, y = 0.3,
+    xend = -0.75, yend = -0.3,
+    lineend = "round", # See available arrow types in example above
+    linejoin = "mitre",
+    size = 1, 
+    arrow = arrow(length = unit(0.1, "inches")),
+    colour = "grey50" # Also accepts "red", "blue' etc
+  ) +
+  annotate("text", x = -.75, y = -0.4, label = "Cold-cued\ngermination", color = "grey50") +
+  annotate("text", x = -.75, y = 0.4, label = "Warm-cued\ngermination", color = "grey50") +
+  annotate("text", x = .55, y = -0.6, label = "More\ngermination", color = "grey50") +
+  annotate("text", x = -.55, y = -0.6, label = "Less\ngermination", color = "grey50") +
+  scale_color_manual(values = c("gold",  "tan4", "steelblue1", "yellowgreen")) -> f4;f4
+
+
+ggsave(f4, file = "results/figures/pca2.png", 
+       path = NULL, scale = 1, width = 180, height = 150, units = "mm", dpi = 600)
+
+# Figure of morphometrics
+
+## Plot PCA
+
+read.csv("data/traits.csv") %>%
+  select(Taxon, Family) %>%
+  merge(read.csv("data/morphometrics.csv"), by = "Taxon") %>%
+  select(Taxon, Family) %>%
+  unique %>%
+  group_by(Family) %>%
+  tally() %>%
+  # arrange(-n) %>%
+  filter(n > 3) %>%
+  pull(Family) -> fams
+
+read.csv("data/traits.csv") %>%
+  select(Taxon, Family) %>%
+  merge(read.csv("data/morphometrics.csv"), by = "Taxon") %>% 
+  filter(Family %in% fams) %>%
+  mutate(Family = ifelse(Family %in% "Compositae", "Asteraceae", Family),
+         Family = ifelse(Family %in% "Leguminosae", "Fabaceae", Family),
+         Family = ifelse(Family %in% c("Poaceae", "Fabaceae"), Family, "Others")) -> morpho
+
+cent <- aggregate(cbind(Width, Length) ~ Family, data = morpho, FUN = mean)
+segs <- merge(morpho, setNames(cent, c("Family", "oDCA1", "oDCA2")), by = "Family", sort = FALSE)
+  
+morpho %>%
+  ggplot(aes(Width, Length, color = Family)) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_vline(xintercept = 0, linetype = "dashed") +
+  #geom_segment(data = segs, mapping = aes(xend = oDCA1, yend = oDCA2, color = Family), show.legend = F, alpha = 0.5) +
+  geom_point(aes(color = Family), alpha = 0.2, size = 3) +
+  geom_label(data = cent, size = 4, aes(label = Family, fill = Family), color = "white", show.legend = F) + 
+  ggthemes::theme_tufte() + 
+  theme(legend.position = "none",
+        panel.background = element_rect(color = "grey96", fill = "grey96"),
+        legend.text = element_text(size = 12, color = "black"),
+        legend.title = element_blank(),
+        axis.text = element_text(size = 12, color = "black"),
+        axis.title = element_text(size = 12, color = "black")) +
+  scale_color_manual(values = c("gold", "darkorchid", "yellowgreen")) +
+  scale_fill_manual(values = c("gold", "darkorchid", "yellowgreen")) +
+  scale_x_continuous(name = "Width (mm)") + 
+  scale_y_continuous(name = "Length (mm)") -> f5;f5
+
+ggsave(f5, file = "results/figures/morpho.png", 
+       path = NULL, scale = 1, width = 100, height = 125, units = "mm", dpi = 600)
+

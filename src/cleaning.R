@@ -148,7 +148,13 @@ read.csv("../#data/germination/data/sospraderas/Accesiones morfo.csv") %>% # See
   merge(seedlots, by = "Seedlot") %>%
   rename(Taxon = Species) %>%
   group_by(Taxon) %>%
-  summarise(Length = mean(Height), Width = mean(Width)) -> morphometrics
+  select(Taxon, Country, Seedlot, Height, Width) %>%
+  rename(Population = Seedlot, Length = Height) %>%
+  filter(Width < 2*Length) -> morpho
+  
+morpho %>% 
+  group_by(Taxon) %>%
+  summarise(Length = mean(Length), Width = mean(Width)) -> morphometrics
 
 # Clean seed mass
 
@@ -189,18 +195,24 @@ rbind(dormancy1, dormancy2) -> dormancy
 
 rm(dormancy1, dormancy2)
 
+# Lifeforms
+
+read.csv("../#data/lifeforms/results/lifeforms.csv") %>%
+  rename(Taxon = TPLName) -> lifeforms
+
 # Merge species traits
 
 dominances %>%
   filter(Dominance != "Transient") %>%
+  merge(lifeforms, all.x = TRUE) %>%
   merge(sncs, all.x = TRUE) %>%
   merge(mass, all.x = TRUE) %>%
   merge(morphometrics, all.x = TRUE) %>%
   merge(dormancy, all.x = TRUE) %>%
   merge(read.csv("../#data/tpl/results/TPLNames.csv")) %>%
-  select(Taxon, Family, Abundance, Dominance, bio06, bio14, pH, Sand, Seed.mass, Length, Width, Dormancy) -> traits0
+  select(Taxon, Family, Lifeform, Abundance, Dominance, bio06, bio14, pH, Sand, Seed.mass, Length, Width, Dormancy) -> traits0
 
-rm(dominances, dormancy, mass, morphometrics, sncs, species, header)
+rm(dominances, dormancy, morphometrics, mass, sncs, lifeforms)
 
 # Extract higher taxonomical ranks
 
@@ -219,8 +231,24 @@ traits0 %>%
   merge(orders, all.x = TRUE) %>%
   merge(read.csv("../#data/germination/data/sospraderas/clades.csv"), all.x = TRUE) %>%
   rename(Order = order, Clade = clade) %>%
-  select(Taxon, Family, Order, Clade,
-         Abundance, Dominance, bio06, bio14, pH, Sand, Seed.mass, Length, Width, Dormancy) -> traits
+  select(Taxon, Family, Order, Clade, Lifeform, 
+         Abundance, Dominance, bio06, bio14, pH, Sand, Seed.mass, Length, Width, Dormancy) %>%
+  mutate(Lifeform = ifelse(Taxon %in% c("Avenula pubescens",
+                                        "Galium mollugo",
+                                        "Knautia nevadensis",
+                                        "Leucanthemum vulgare",
+                                        "Lotus tenuis",
+                                        "Medicago sativa",
+                                        "Onobrychis viciifolia",
+                                        "Phleum pratense",
+                                        "Salvia pratensis",
+                                        "Schedonorus arundinaceus",
+                                        "Schedonorus pratensis",
+                                        "Taraxacum officinale",
+                                        "Trifolium montanum"), "Hemicryptophyte", Lifeform),
+         Lifeform = ifelse(Taxon %in% c("Lolium multiflorum",
+                                        "Rhinanthus angustifolius",
+                                        "Rhinanthus mediterraneus"), "Therophyte", Lifeform)) -> traits
 
 rm(orders, families, taxonomy, traits0)
 
@@ -318,7 +346,7 @@ rbind(germination1, germination2, germination3) %>%
   filter(Taxon %in% traits$Taxon) %>%
   group_by() -> germination
 
-rm(germination1, germination2, germination3)
+rm(germination1, germination2, germination3, seedlots)
 
 # Phylogenetic tree
 
@@ -352,6 +380,16 @@ rm(ranks1)
 
 write.tree(tree$scenario.3, file = "data/meadowstree.tree")
 write.csv(germination, file = "data/germination.csv", row.names = FALSE)
+header %>%
+  write.csv(file = "data/header.csv", row.names = FALSE)
+species %>%
+  write.csv(file = "data/species.csv", row.names = FALSE)
+morpho %>% 
+  filter(Taxon %in% traits$Taxon) %>%
+  arrange(Taxon) %>%
+  write.csv(file = "data/morphometrics.csv", row.names = FALSE)
 traits %>%
+  select(-c(Order, Clade, Dominance, Dormancy)) %>%
   filter(Taxon %in% germination$Taxon) %>%
+  arrange(Taxon) %>%
   write.csv(file = "data/traits.csv", row.names = FALSE)
