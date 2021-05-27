@@ -23,24 +23,6 @@ germination %>% filter(Scarification == 1) %>% pull(Taxon) %>% length -> MSscarY
 germination %>% filter(GA3 == 0) %>% pull(Taxon) %>% length -> MSgaN
 germination %>% filter(GA3 == 1) %>% pull(Taxon) %>% length -> MSgaY
 
-# Seed morpho
-
-traits %>%
-  group_by(Family) %>%
-  summarise(Min = min(Seed.mass, na.rm = TRUE), 
-            Max = max(Seed.mass, na.rm = TRUE),
-            Length = mean(Length, na.rm = TRUE), 
-            Width = mean(Width, na.rm = TRUE)) -> morpho
-
-morpho %>% filter(Family == "Poaceae") %>% pull(Min) %>% round(1) -> MSpoaMin
-morpho %>% filter(Family == "Poaceae") %>% pull(Max) %>% round(1) -> MSpoaMax
-morpho %>% filter(Family == "Poaceae") %>% pull(Length) %>% round(1) -> MSpoaLength
-morpho %>% filter(Family == "Poaceae") %>% pull(Width) %>% round(1) -> MSpoaWidth
-morpho %>% filter(Family == "Leguminosae") %>% pull(Min) %>% round(1) -> MSlegMin
-morpho %>% filter(Family == "Leguminosae") %>% pull(Max) %>% round(1) -> MSlegMax
-morpho %>% filter(Family == "Leguminosae") %>% pull(Length) %>% round(1) -> MSlegLength
-morpho %>% filter(Family == "Leguminosae") %>% pull(Width) %>% round(1) -> MSlegWidth
-
 # Calculate lambda http://www.mpcm-evolution.com/practice/online-practical-material-chapter-11/chapter-11-1-simple-model-mcmcglmm
 
 lambda <- allspp$VCV[,"animal"]/(allspp$VCV[,"animal"] + allspp$VCV[,"units"])
@@ -85,3 +67,5 @@ traits %>%
   FactoMineR::PCA(graph = FALSE) -> pca
 
 pca$var$contrib
+
+

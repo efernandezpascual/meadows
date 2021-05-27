@@ -52,16 +52,14 @@ read.xlsx("../#data/plots/data/sospraderas/Analisis_Suelos_SOSPraderas_16-02-201
   merge(read.csv("../#data/plots/data/sospraderas/plotIDs.csv"), by = "X2") %>% # This is a file I had to do manually to fix the mess of IDs in the extra soil data file
   dplyr::select_if(~ any(is.numeric(.))) %>% # Remove non-numeric variables
   rename(Plot = Cod_Sitio,
-         pH = `pH.H2O.(1:2.5)`,
-         Fertility = `CICE.(cmol+/kg)`,
-         Sand = `Arena.(%)`) %>%
-  select(Plot, pH, Sand) -> soils
+         pH = `pH.H2O.(1:2.5)`) %>%
+  select(Plot, pH) -> soils
 
 # Get CHELSA bioclimatic variables
 # CHELSA rasters are stored outside project folder, must download from https://chelsa-climate.org/bioclim/
 
-bio06 <- raster::raster("../#data/maps/CHELSA/CHELSA_bio10_06.tif") # Min temperature coldest month
-bio14 <- raster::raster("../#data/maps/CHELSA/CHELSA_bio10_14.tif") # Precipitation driest month
+bio06 <- raster::raster("../#data/maps/CHELSA/CHELSA_bio10_06.tif") # Min coldest month
+bio14 <- raster::raster("../#data/maps/CHELSA/CHELSA_bio10_14.tif") # P driest month
 
 pts <- header0
 sp::coordinates(pts) <- ~Longitude+Latitude # Make points a spatial object
@@ -83,8 +81,8 @@ rm(header0, Chelsa, soils, bio06, bio14, pts)
 
 header %>%
   merge(species) %>%
-  select(Species, bio06:Sand, Cover) %>%
-  gather(Trait, Value, bio06:Sand) %>%
+  select(Species, bio06:pH, Cover) %>%
+  gather(Trait, Value, bio06:pH) %>%
   group_by(Species, Trait) %>%
   summarise(Value = weighted.mean(Value, Cover)) %>%
   spread(Trait, Value) %>%
@@ -102,9 +100,7 @@ species %>%
   summarise(Frequency = length(Species), Abundance = sum(Cover)) %>% # Relative abundance
   mutate(Abundance = scales::rescale(Abundance, to = c(1, 100))) %>% # Cumulative relative abundance (rescaled 1-100)
   mutate(Frequency = 100 * Frequency / length(unique(species$Plot))) %>%
-  mutate(Dominance = ifelse(Abundance >= 12, "Dominant", "Subordinate"),
-         Dominance = ifelse(Abundance < 2, "Transient", Dominance)) %>%
-  select(Species, Abundance, Dominance) %>%
+  select(Species, Abundance) %>%
   arrange(-Abundance) %>%
   rename(Taxon = Species) -> dominances
 
@@ -151,10 +147,6 @@ read.csv("../#data/germination/data/sospraderas/Accesiones morfo.csv") %>% # See
   select(Taxon, Country, Seedlot, Height, Width) %>%
   rename(Population = Seedlot, Length = Height) %>%
   filter(Width < 2*Length) -> morpho
-  
-morpho %>% 
-  group_by(Taxon) %>%
-  summarise(Length = mean(Length), Width = mean(Width)) -> morphometrics
 
 # Clean seed mass
 
@@ -178,61 +170,26 @@ rbind(mass1, mass2, mass3) %>%
 
 rm(mass1, mass2, mass3)
 
-# Get dormancy classes
-
-read.csv("../#data/baskin/results/dormancy.csv") %>%
-  rename(Taxon = TPLName) %>%
-  filter(Taxon %in% species$Species) -> dormancy1
-
-read.csv("../#data/germination/data/enscobase meadows/Species_domimance_in_ENSCOBASE.csv") %>%
-  mutate(Taxon = gsub("_", " ", animal)) %>%
-  select(Taxon, dormancy) %>% 
-  rename(Dormancy = dormancy) %>%
-  filter(! Taxon %in% dormancy1$Taxon) %>%
-  unique -> dormancy2
-
-rbind(dormancy1, dormancy2) -> dormancy
-
-rm(dormancy1, dormancy2)
-
 # Lifeforms
 
 read.csv("../#data/lifeforms/results/lifeforms.csv") %>%
   rename(Taxon = TPLName) -> lifeforms
 
+# Seed number
+
+read.csv("../#data/leda/results/leda.csv") %>%
+  rename(Taxon = TPLName) -> numbers
+
 # Merge species traits
 
 dominances %>%
-  filter(Dominance != "Transient") %>%
+  filter(Abundance >= 2) %>%
   merge(lifeforms, all.x = TRUE) %>%
   merge(sncs, all.x = TRUE) %>%
   merge(mass, all.x = TRUE) %>%
-  merge(morphometrics, all.x = TRUE) %>%
-  merge(dormancy, all.x = TRUE) %>%
+  merge(numbers, all.x = TRUE) %>%
   merge(read.csv("../#data/tpl/results/TPLNames.csv")) %>%
-  select(Taxon, Family, Lifeform, Abundance, Dominance, bio06, bio14, pH, Sand, Seed.mass, Length, Width, Dormancy) -> traits0
-
-rm(dominances, dormancy, morphometrics, mass, sncs, lifeforms)
-
-# Extract higher taxonomical ranks
-
-traits0$Family %>%
-  unique %>%
-  as.character() -> families
-
-taxize::classification(families, db = "gbif") -> 
-  taxonomy
-
-as.data.frame(t(sapply(names(taxonomy), function (x) taxonomy[[x]] [, 1])[c(5, 4), ])) %>%
-  remove_rownames() %>%
-  rename(Family = V1, order = V2) -> orders
-
-traits0 %>%
-  merge(orders, all.x = TRUE) %>%
-  merge(read.csv("../#data/germination/data/sospraderas/clades.csv"), all.x = TRUE) %>%
-  rename(Order = order, Clade = clade) %>%
-  select(Taxon, Family, Order, Clade, Lifeform, 
-         Abundance, Dominance, bio06, bio14, pH, Sand, Seed.mass, Length, Width, Dormancy) %>%
+  select(Taxon, Family, Lifeform, Abundance, bio06, bio14, pH, Seed.mass, Seed.number) %>%
   mutate(Lifeform = ifelse(Taxon %in% c("Avenula pubescens",
                                         "Galium mollugo",
                                         "Knautia nevadensis",
@@ -245,12 +202,23 @@ traits0 %>%
                                         "Schedonorus arundinaceus",
                                         "Schedonorus pratensis",
                                         "Taraxacum officinale",
-                                        "Trifolium montanum"), "Hemicryptophyte", Lifeform),
+                                        "Trifolium montanum",
+                                        "Bistorta officinalis",
+                                        "Centaurea debeauxii",
+                                        "Galium lucidum",
+                                        "Onobrychis supina"), "Hemicryptophyte", Lifeform),
+         Lifeform = ifelse(Taxon %in% c("Thalictrum tuberosum"), "Geophyte", Lifeform),
          Lifeform = ifelse(Taxon %in% c("Lolium multiflorum",
                                         "Rhinanthus angustifolius",
                                         "Rhinanthus mediterraneus"), "Therophyte", Lifeform)) -> traits
 
-rm(orders, families, taxonomy, traits0)
+traits %>%
+  select(Taxon) %>%
+  merge(read.csv("../#data/tpl/results/TPLNames.csv"), all.x = TRUE) %>%
+  mutate(TPLName = paste(New.Genus, New.Species, sep = " ")) %>% 
+  pull(TPLName) -> Names
+
+rm(dominances, morphometrics, mass, numbers, sncs, lifeforms)
 
 # Clean germination data from SOS PRADERAS
 
@@ -350,46 +318,44 @@ rm(germination1, germination2, germination3, seedlots)
 
 # Phylogenetic tree
 
-traits %>%
-  filter(Taxon %in% germination$Taxon) %>%
-  separate(Taxon, into = c("Genus", "Species"), sep = " ") %>%
-  mutate(species = paste(Genus, Species),
-         genus = Genus,
-         family = Family) %>%
-  select(species, genus, family) %>%
-  unique %>%
-  mutate(family = fct_recode(family, 
-                             "Asteraceae" = "Compositae",
-                             "Fabaceae" = "Leguminosae",
-                             "Asphodelaceae" = "Xanthorrhoeaceae")) %>%
-  arrange(species) %>%
-  na.omit -> 
-  ranks1
-
-library(V.PhyloMaker)
-
-phylo.maker(sp.list = ranks1, 
-            tree = GBOTB.extended, 
-            nodes = nodes.info.1, 
-            scenarios = "S3") ->
-  tree
-
-rm(ranks1)
+# traits %>%
+#   filter(Taxon %in% germination$Taxon) %>%
+#   separate(Taxon, into = c("Genus", "Species"), sep = " ") %>%
+#   mutate(species = paste(Genus, Species),
+#          genus = Genus,
+#          family = Family) %>%
+#   select(species, genus, family) %>%
+#   unique %>%
+#   mutate(family = fct_recode(family, 
+#                              "Asteraceae" = "Compositae",
+#                              "Fabaceae" = "Leguminosae",
+#                              "Asphodelaceae" = "Xanthorrhoeaceae")) %>%
+#   arrange(species) %>%
+#   na.omit -> 
+#   ranks1
+# 
+# library(V.PhyloMaker)
+# 
+# phylo.maker(sp.list = ranks1, 
+#             tree = GBOTB.extended, 
+#             nodes = nodes.info.1, 
+#             scenarios = "S3") ->
+#   tree
+# 
+# rm(ranks1)
 
 # Save
 
-write.tree(tree$scenario.3, file = "data/meadowstree.tree")
+# write.tree(tree$scenario.3, file = "data/meadowstree.tree")
 write.csv(germination, file = "data/germination.csv", row.names = FALSE)
-header %>%
-  write.csv(file = "data/header.csv", row.names = FALSE)
-species %>%
-  write.csv(file = "data/species.csv", row.names = FALSE)
+# header %>%
+#   write.csv(file = "data/header.csv", row.names = FALSE)
+# species %>%
+#   write.csv(file = "data/species.csv", row.names = FALSE)
 morpho %>% 
   filter(Taxon %in% traits$Taxon) %>%
   arrange(Taxon) %>%
   write.csv(file = "data/morphometrics.csv", row.names = FALSE)
 traits %>%
-  select(-c(Order, Clade, Dominance, Dormancy)) %>%
-  filter(Taxon %in% germination$Taxon) %>%
   arrange(Taxon) %>%
   write.csv(file = "data/traits.csv", row.names = FALSE)
