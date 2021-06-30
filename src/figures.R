@@ -194,7 +194,8 @@ traits %>%
 
 traits %>%
   select(Taxon, Family) %>%
-  cbind(pca$ind$coord[, 1:2]) -> pcaInds
+  cbind(pca$ind$coord[, 1:2]) %>%
+  filter(Dim.2 > -3) -> pcaInds
 
 pca$var$coord[, 1:2] %>%
   data.frame %>%
@@ -210,7 +211,7 @@ ggplot(pcaInds, aes(x = Dim.1, y = Dim.2)) +
   geom_vline(xintercept = 0, linetype = "dashed") +
   geom_point(aes(color = Family), alpha = 0.8, size = 8) +
   ggthemes::theme_tufte() + 
-  theme(legend.position = "top",
+  theme(legend.position = "none",
         legend.title = element_blank(),
         legend.text = element_text(size = 12, color = "black"),
         panel.background = element_rect(color = "grey96", fill = "grey96"),
@@ -268,6 +269,11 @@ ggplot(pcaInds, aes(x = Dim.1, y = Dim.2)) +
   annotate("text", x = -4.2, y = 2.1, label = "Hardseedness\nHeavy seeds\nFabaceae", color = "grey50") +
   annotate("text", x = -2.4, y = -3, label = "Warm-dry climes\nAcidic soils", color = "grey50") +
   annotate("text", x = 2.4, y = -3, label = "Cool-wet climes\nAlkaline soils", color = "grey50") +
+  
+  annotate("text", x = 4, y = 2.9, label = "Poaceae", color = "yellowgreen", hjust = 1) +
+  annotate("text", x = 4, y = 2.6, label = "Fabaceae", color = "gold", hjust = 1) +
+  annotate("text", x = 4, y = 2.3, label = "Other families", color = "darkorchid", hjust = 1) +
+  
   scale_color_manual(values = c("yellowgreen",  "gold", "darkorchid")) +
   scale_fill_manual(values = c("grey65",  "white"))-> f4;f4
 
@@ -324,7 +330,7 @@ ggplot(pcaInds, aes(x = Dim.1, y = Dim.2)) +
   ggthemes::theme_tufte() + 
   theme(legend.position = "top",
         panel.background = element_rect(color = "grey96", fill = "grey96"),
-        legend.text = element_text(size = 12, color = "black"),
+        legend.text = element_text(size = 11, color = "black"),
         legend.title = element_blank(),
         axis.text = element_text(size = 12, color = "black"),
         axis.title = element_text(size = 12, color = "black")) +
