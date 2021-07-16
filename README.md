@@ -3,12 +3,13 @@ README.md
 
 ![Hay meadow from the Cantabrian Mountains](meadow.JPG)
 
-# Seed germination ecology of European mesic grasslands
+# Seed ecology of European mesic meadows: the domestication of plant regeneration strategies
 
 This repository stores all the information related to the manuscript
-*Seed germination ecology of European mesic grasslands*, including the
-raw datasets, the scripts to perform data cleaning and analysis, and the
-`Rmarkdown` files to create the manuscript.
+*Seed ecology of European mesic meadows: the domestication of plant
+regeneration strategies*, including the raw datasets, the scripts to
+perform data cleaning and analysis, and the `Rmarkdown` files to create
+the manuscript.
 
 ## Contents
 

@@ -1,37 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <style xmlns="http://purl.org/net/xbiblio/csl" class="in-text" version="1.0" demote-non-dropping-particle="sort-only" default-locale="en-US">
-  <!-- This style was edited with the Visual CSL Editor (http://editor.citationstyles.org/visualEditor/) -->
   <info>
-    <title>Journal of Vegetation Science</title>
-    <id>http://www.zotero.org/styles/journal-of-vegetation-science</id>
-    <link href="http://www.zotero.org/styles/journal-of-vegetation-science" rel="self"/>
-    <link href="http://www.zotero.org/styles/apa" rel="template"/>
-    <link href="http://onlinelibrary.wiley.com/journal/10.1111/(ISSN)1654-1103/homepage/ForAuthors.html" rel="documentation"/>
+    <title>Annals of Botany</title>
+    <id>http://www.zotero.org/styles/annals-of-botany</id>
+    <link href="http://www.zotero.org/styles/annals-of-botany" rel="self"/>
+    <link href="http://www.oxfordjournals.org/our_journals/annbot/for_authors/index.html" rel="documentation"/>
     <author>
       <name>Johan Asplund</name>
       <email>asplundj@gmail.com</email>
     </author>
-    <contributor>
-      <name>Mario José</name>
-      <email>gnumario [at-mark] gmail [dot-mark] com</email>
-    </contributor>
     <category citation-format="author-date"/>
     <category field="biology"/>
-    <issn>1100-9233</issn>
-    <eissn>1654-1103</eissn>
-    <updated>2015-01-22T22:19:51+00:00</updated>
+    <issn>0305-7364</issn>
+    <eissn>1095-8290</eissn>
+    <updated>2016-12-26T19:18:19+00:00</updated>
     <rights license="http://creativecommons.org/licenses/by-sa/3.0/">This work is licensed under a Creative Commons Attribution-ShareAlike 3.0 License</rights>
   </info>
   <macro name="editor-translator">
     <names variable="editor translator" prefix="(" suffix=")" delimiter=", ">
-      <name and="symbol" initialize-with=". " delimiter=", "/>
+      <name and="text" initialize-with="" delimiter=", "/>
       <label form="short" prefix=", " text-case="capitalize-first"/>
     </names>
   </macro>
   <macro name="author">
     <names variable="author">
-      <name and="symbol" delimiter-precedes-last="always" initialize-with="." name-as-sort-order="all"/>
+      <name name-as-sort-order="all" sort-separator=" " initialize-with="" delimiter=", " delimiter-precedes-last="always" font-weight="bold"/>
       <label form="short" prefix=" (" suffix=")" text-case="capitalize-first"/>
+      <et-al font-style="italic"/>
       <substitute>
         <names variable="editor"/>
         <names variable="translator"/>
@@ -41,7 +36,8 @@
   </macro>
   <macro name="author-short">
     <names variable="author">
-      <name form="short" and="symbol" delimiter=", " initialize-with=". "/>
+      <name form="short" and="text" delimiter=", " initialize-with=""/>
+      <et-al font-style="italic"/>
       <substitute>
         <names variable="editor"/>
         <names variable="translator"/>
@@ -67,12 +63,12 @@
     </choose>
   </macro>
   <macro name="publisher">
-    <group delimiter=", ">
-      <text variable="publisher"/>
+    <group delimiter=": ">
       <text variable="publisher-place"/>
+      <text variable="publisher"/>
     </group>
   </macro>
-  <citation et-al-min="3" et-al-use-first="1" disambiguate-add-year-suffix="true" disambiguate-add-names="true">
+  <citation collapse="year-suffix" et-al-min="3" et-al-use-first="1" disambiguate-add-year-suffix="true" disambiguate-add-names="true" disambiguate-add-givenname="true">
     <sort>
       <key variable="issued"/>
       <key variable="author"/>
@@ -90,14 +86,14 @@
       </group>
     </layout>
   </citation>
-  <bibliography hanging-indent="true">
+  <bibliography hanging-indent="false" et-al-min="7" et-al-use-first="3">
     <sort>
       <key macro="author-short"/>
-      <key macro="title"/>
+      <key variable="issued"/>
     </sort>
     <layout>
-      <text macro="author" suffix="."/>
-      <date variable="issued" prefix=" " suffix=".">
+      <text macro="author" suffix="." font-weight="bold"/>
+      <date variable="issued" prefix=" " suffix="." font-weight="bold">
         <date-part name="year"/>
       </date>
       <choose>
@@ -108,54 +104,46 @@
           </group>
           <text prefix=" " suffix="." macro="publisher"/>
         </if>
+        <else-if type="webpage" match="any">
+          <group delimiter=". " prefix=" " suffix=".">
+            <text macro="title" font-style="italic"/>
+            <text variable="URL"/>
+            <date variable="accessed">
+              <date-part name="day" form="numeric" suffix=" "/>
+              <date-part name="month" form="short" suffix=" "/>
+              <date-part name="year" form="long"/>
+            </date>
+          </group>
+        </else-if>
         <else-if type="chapter paper-conference" match="any">
           <text macro="title" prefix=" "/>
-          <group prefix=". ">
-            <text term="in" text-case="capitalize-first"/>
-            <names variable="editor translator" prefix=" " suffix="," delimiter=", ">
-              <name and="symbol" initialize-with="." name-as-sort-order="all"/>
-              <label form="short" prefix=" (" suffix=")"/>
-            </names>
-            <text variable="container-title" font-style="italic" prefix=" " suffix=","/>
-            <group prefix=" " suffix=".">
-              <label variable="page" form="short" suffix=" "/>
-              <text variable="page"/>
-            </group>
-            <text variable="collection-title" prefix=" " suffix="."/>
-            <group suffix=".">
-              <text macro="publisher" prefix=" "/>
-            </group>
-          </group>
-        </else-if>
-        <else-if type="article-journal">
-          <group prefix=" " suffix=". " delimiter=" ">
-            <text macro="title"/>
-            <text macro="editor-translator"/>
-          </group>
-          <choose>
-            <if variable="issue volume" match="any">
-              <group delimiter=" " suffix=".">
-                <text variable="container-title" font-style="italic"/>
-                <text variable="volume" font-style="normal" suffix=":"/>
-                <text variable="page"/>
+          <group prefix=" ">
+            <text term="in" text-case="capitalize-first" suffix=": "/>
+            <group>
+              <group suffix=".">
+                <names variable="editor translator" delimiter="," suffix=" ">
+                  <name name-as-sort-order="all" sort-separator=" " initialize-with="" delimiter=", " delimiter-precedes-last="always"/>
+                  <label form="short" prefix=", "/>
+                </names>
+                <text variable="collection-title" prefix=" " suffix="."/>
+                <text variable="container-title" font-style="italic" prefix=" " suffix="."/>
+                <text macro="publisher" prefix=" " suffix=", "/>
+                <text variable="page" suffix="."/>
               </group>
-            </if>
-            <else>
-              <text variable="container-title" font-style="italic"/>
-              <!-- Online version before inclusion in an issue -->
-              <text variable="DOI" prefix=". doi: "/>
-            </else>
-          </choose>
+            </group>
+          </group>
         </else-if>
         <else>
-          <group suffix=". " prefix=" " delimiter=" ">
-            <text macro="title"/>
-            <text macro="editor-translator"/>
+          <group suffix=".">
+            <text macro="title" prefix=" "/>
+            <text macro="editor-translator" prefix=" "/>
           </group>
-          <group delimiter=" " suffix=".">
+          <group prefix=" " suffix=".">
             <text variable="container-title" font-style="italic"/>
-            <text variable="volume" font-style="normal" suffix=":"/>
-            <text variable="page"/>
+            <group prefix=" ">
+              <text variable="volume" font-weight="bold"/>
+            </group>
+            <text variable="page" prefix=": "/>
           </group>
         </else>
       </choose>

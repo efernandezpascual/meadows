@@ -381,6 +381,19 @@ ggplot(pcaInds, aes(x = Dim.1, y = Dim.2)) +
   annotate("text", x = -.55, y = -0.6, label = "Less\ngermination", color = "grey50") +
   scale_color_manual(values = c("#fdda62",  "saddlebrown", "#3dc6fa", "#5fc765")) -> f5;f5
 
-
 ggsave(f5, file = "results/figures/Fig5.png", 
        path = NULL, scale = 1, width = 173, height = 140, units = "mm", dpi = 600)
+
+# For publication
+
+ggsave(f2, file = "results/figures/Fig2.jpg", 
+       path = NULL, scale = 1, width = 173, height = 110, units = "mm", dpi = 300)
+
+ggsave(f3, file = "results/figures/Fig3.jpg", 
+       path = NULL, scale = 1, width = 173, height = 65, units = "mm", dpi = 300)
+
+ggsave(f4, file = "results/figures/Fig4.jpg", 
+       path = NULL, scale = 1, width = 173, height = 140, units = "mm", dpi = 300)
+
+ggsave(f5, file = "results/figures/Fig5.jpg", 
+       path = NULL, scale = 1, width = 173, height = 140, units = "mm", dpi = 300)

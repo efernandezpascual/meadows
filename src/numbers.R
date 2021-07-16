@@ -57,12 +57,18 @@ read.csv("../data/germination.csv") %>%
             Stratification = weighted.mean(Stratification, w = Germination),
             GA3 = weighted.mean(GA3, w = Germination)) %>%
   merge(read.csv("../data/traits.csv"), by = "Taxon") %>%
-  select(Taxon, Family, Temperature:Stratification, Seed.mass) %>%
+  mutate(Family = ifelse(Family %in% c("Leguminosae", "Poaceae"), Family, "Others"),
+         Family = ifelse(Family %in% "Leguminosae", "Fabaceae", Family)) %>%
+  mutate(Family = fct_relevel(Family, c("Poaceae", "Fabaceae", "Others"))) %>%
+  select(Taxon, Family, Temperature:Stratification, Seed.mass, Seed.number, bio06:pH) %>%
   na.omit() -> traits
 
 ## Do PCA
 
 traits %>%
+  gather(Trait, Value, Temperature:Seed.mass) %>%
+  mutate(Value = log(0.01+ Value)) %>%
+  spread(Trait, Value) %>%
   select(-c(Taxon, Family)) %>%
   FactoMineR::PCA(graph = FALSE) -> pca
 
