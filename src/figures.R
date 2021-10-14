@@ -4,7 +4,7 @@ library(tidyverse)
 
 ## Plot figure A
 
-read.csv("data/traits.csv") %>%
+read.csv("data/iberian.csv") %>%
   select(Taxon, Family,
          Seed.mass, Seed.number) %>%
   mutate(Family = ifelse(Family %in% c("Leguminosae", "Poaceae"), Family, "Others"),
@@ -32,18 +32,14 @@ read.csv("data/traits.csv") %>%
 
 ## Plot figure B
 
-read.csv("data/traits.csv") %>%
-  select(Taxon, Family) %>%
-  merge(read.csv("data/morphometrics.csv"), by = "Taxon") %>%
+read.csv("data/morphometrics.csv") %>%
   select(Taxon, Family) %>%
   unique %>%
   group_by(Family) %>%
   tally() %>%
   pull(Family) -> fams
 
-read.csv("data/traits.csv") %>%
-  select(Taxon, Family) %>%
-  merge(read.csv("data/morphometrics.csv"), by = "Taxon") %>% 
+read.csv("data/morphometrics.csv") %>% 
   filter(Family %in% fams) %>%
   mutate(Family = ifelse(Family %in% "Compositae", "Asteraceae", Family),
          Family = ifelse(Family %in% "Leguminosae", "Fabaceae", Family),
@@ -167,21 +163,10 @@ ggsave(f3, file = "results/figures/Fig3.png",
 
 ## Prepare data frame
  
-read.csv("data/germination.csv") %>%
-  mutate(Germination = Germinated / Germinable) %>%
-  group_by(Taxon) %>%
-  summarise(Temperature = weighted.mean(Tmean, w = Germination),
-            Alternating = weighted.mean(Alternating, w = Germination),
-            Light = weighted.mean(Light, w = Germination),
-            Scarification = weighted.mean(Scarification, w = Germination),
-            Stratification = weighted.mean(Stratification, w = Germination),
-            GA3 = weighted.mean(GA3, w = Germination)) %>%
-  merge(read.csv("data/traits.csv"), by = "Taxon") %>%
+read.csv("data/iberian.csv") %>%
   mutate(Family = ifelse(Family %in% c("Leguminosae", "Poaceae"), Family, "Others"),
          Family = ifelse(Family %in% "Leguminosae", "Fabaceae", Family)) %>%
-  mutate(Family = fct_relevel(Family, c("Poaceae", "Fabaceae", "Others"))) %>%
-  select(Taxon, Family, Temperature:Stratification, Seed.mass, Seed.number, bio06:pH) %>%
-  na.omit() -> traits
+  mutate(Family = fct_relevel(Family, c("Poaceae", "Fabaceae", "Others"))) -> traits
 
 ## Do PCA
 
@@ -284,28 +269,13 @@ ggsave(f4, file = "results/figures/Fig4.png",
 
 # Figure other habitats
 
-read.csv("data/germination.csv") %>%
-  filter(Reference == "SOSPRADERAS") %>%
-  filter(GA3 == 0) %>%
-  merge(read.csv("data/traits.csv")) %>%
-  filter((Family == "Leguminosae" & Scarification == 1) | Family != "Leguminosae") %>%
-  group_by(Taxon, Seed.mass, Tmean) %>%
-  summarise(G = sum(Germinated) / sum(Germinable)) %>%
-  spread(Tmean, G) %>%
-  group_by(Taxon) %>%
-  mutate(Habitat = "Mesic meadows") %>%
-  rename(F14 = `9`, F22 = `17`, F30 = `25`) %>%
-  select(Taxon, Habitat, F14:F30) %>%
-  rbind(read.csv("data/others.csv")) %>%
-  group_by() -> df1
-
 ## Do PCA
 
-df1 %>%
+read.csv("data/cantabrian.csv") %>%
   select(-c(Taxon, Habitat)) %>%
   FactoMineR::PCA(graph = FALSE, scale = FALSE) -> pca
 
-df1 %>%
+read.csv("data/cantabrian.csv") %>%
   select(c(Taxon, Habitat)) %>%
   cbind(pca$ind$coord[, 1:2]) -> pcaInds
 
@@ -386,7 +356,7 @@ ggsave(f5, file = "results/figures/Fig5.png",
 
 # For publication
 
-ggsave(f2, file = "results/figures/Fig2.jpg", 
+ggsave(f2, file = "results/figures/Fig2.eps", 
        path = NULL, scale = 1, width = 173, height = 110, units = "mm", dpi = 300)
 
 ggsave(f3, file = "results/figures/Fig3.jpg", 

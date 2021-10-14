@@ -6,6 +6,8 @@ phangorn::nnls.tree(cophenetic(ape::read.tree("data/meadowstree.tree")),
                     ape::read.tree("data/meadowstree.tree"), rooted = TRUE) -> 
   nnls_orig
 
+nnls_orig$node.label <- NULL
+
 # Set number of iterations
 
 nite = 500000
@@ -23,8 +25,7 @@ list(R = list(V = 1, nu = 50),
 
 # Read data
 
-read.csv("data/germination.csv") %>%
-  merge(read.csv("data/traits.csv"), by = "Taxon") %>%
+read.csv("data/european.csv") %>%
   mutate(ID = gsub(" ", "_", Taxon), animal = ID) %>% 
   select(ID, animal, Family,
          Reference:Population, Scarification:GA3,

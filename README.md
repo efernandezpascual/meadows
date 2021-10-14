@@ -3,13 +3,12 @@ README.md
 
 ![Hay meadow from the Cantabrian Mountains](meadow.JPG)
 
-# Seed ecology of European mesic meadows: the domestication of plant regeneration strategies
+# Seed ecology of European mesic meadows
 
 This repository stores all the information related to the manuscript
-*Seed ecology of European mesic meadows: the domestication of plant
-regeneration strategies*, including the raw datasets, the scripts to
-perform data cleaning and analysis, and the `Rmarkdown` files to create
-the manuscript.
+*Seed ecology of European mesic meadows*, including the raw datasets,
+the scripts to perform data cleaning and analysis, and the `Rmarkdown`
+files to create the manuscript.
 
 ## Contents
 
@@ -19,11 +18,11 @@ and storing research projects.
 
 The following materials are available in the folders of this repository:
 
-  - `data` Data files including the seed germination dataset, the
-    species traits, and the phylogenetic tree.
-  - `doc` Files to create the manuscript using `Rmarkdown`.
-  - `results` Output of the `R` scripts, including figures and models.
-  - `src` Scripts in `R` language used to clean the raw data and perform
+-   `data` Data files including the seed trait datasets (European,
+    Iberian and Cantabrian) and the phylogenetic tree.
+-   `doc` Files to create the manuscript using `Rmarkdown`.
+-   `results` Output of the `R` scripts, including figures and models.
+-   `src` Scripts in `R` language used to clean the raw data and perform
     the analyses of the manuscript.
 
 ## Citation

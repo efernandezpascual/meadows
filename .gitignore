@@ -3,6 +3,10 @@
 .RData
 .Ruserdata
 src/provisional.R
+src/cleaning.R
+data/others.csv
+data/species.csv
 results/figures/Presentación1 - copia.pptx
 results/figures/Presentación1.pptx
 results/figures/germination.png
+

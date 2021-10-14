@@ -1,7 +1,7 @@
 # Read data
 
-read.csv("../data/germination.csv") -> germination
-read.csv("../data/traits.csv") -> traits
+read.csv("../data/european.csv") -> germination
+read.csv("../data/iberian.csv") -> traits
 load("../results/models/allspp.RData")
 
 # Calculate numbers
@@ -47,16 +47,7 @@ summary(allspp)$Gcovariances[2, 3] %>% round(2) -> MSsourceh
 
 # PCA numbers
 
-read.csv("../data/germination.csv") %>%
-  mutate(Germination = Germinated / Germinable) %>%
-  group_by(Taxon) %>%
-  summarise(Temperature = weighted.mean(Tmean, w = Germination),
-            Alternating = weighted.mean(Alternating, w = Germination),
-            Light = weighted.mean(Light, w = Germination),
-            Scarification = weighted.mean(Scarification, w = Germination),
-            Stratification = weighted.mean(Stratification, w = Germination),
-            GA3 = weighted.mean(GA3, w = Germination)) %>%
-  merge(read.csv("../data/traits.csv"), by = "Taxon") %>%
+read.csv("../data/iberian.csv") %>%
   mutate(Family = ifelse(Family %in% c("Leguminosae", "Poaceae"), Family, "Others"),
          Family = ifelse(Family %in% "Leguminosae", "Fabaceae", Family)) %>%
   mutate(Family = fct_relevel(Family, c("Poaceae", "Fabaceae", "Others"))) %>%

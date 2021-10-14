@@ -1,5 +1,12 @@
 library(tidyverse); library(openxlsx)
 
+# Read meadow species list (https://doi.org/10.1111/avsc.12519)
+
+read.csv("data/species.csv") %>%
+  separate(Taxon, into = c("Genus", "Species"), sep = " ") %>%
+  mutate(Taxon = paste(Genus, Species), sep = " ") %>%
+  select(Taxon) -> spplist
+
 # Clean species data
 
 read.xlsx("../#data/plots/data/sospraderas/Inventarios SOS PRADERAS privacidad.xlsx", sheet = 1) %>% # These are the relevés in the DB
@@ -133,93 +140,6 @@ read.csv("../#data/germination/data/sospraderas/Muestras de semillas.csv") %>% #
                 Country) ->
   seedlots
 
-# Clean morphometric analysis data
-
-read.csv("../#data/germination/data/sospraderas/Accesiones morfo.csv") %>% # Seedlot information for the morphological analysis
-  filter(Tipo.de.espécies == "Espécies silvestres") %>% # Commercial seed lots of the project, are of no interest here
-  dplyr::select(ID, Label) %>% 
-  merge(read.csv("../#data/germination/data/sospraderas/Análise morfométrica.csv"), by = "Label") %>% # Results of the morphometric analysis as provided by Madalena Vaz
-  dplyr::select(-c(Label, X.1)) %>%
-  rename(Seedlot = ID) %>% # This is the seedlot ID code as used in the final report of the project
-  merge(seedlots, by = "Seedlot") %>%
-  rename(Taxon = Species) %>%
-  group_by(Taxon) %>%
-  select(Taxon, Country, Seedlot, Height, Width) %>%
-  rename(Population = Seedlot, Length = Height) %>%
-  filter(Width < 2*Length) -> morpho
-
-# Clean seed mass
-
-read.csv("../#data/germination/data/enscobase meadows/Species_domimance_in_ENSCOBASE.csv") %>%
-  mutate(Taxon = gsub("_", " ", animal)) %>%
-  select(Taxon, mass) %>% 
-  rename(Seed.mass = mass) %>%
-  unique -> mass1
-
-read.csv("../#data/germination/data/sospraderas/SID Seed Mass.csv") %>%
-  rename(Taxon = Species,
-         Seed.mass = Seed.mass.mg) -> mass2
-
-read.csv("../#data/seedmass/results/seedmass.csv") %>%
-  rename(Taxon = TPLName) %>%
-  filter(Taxon %in% species$Species) -> mass3
-
-rbind(mass1, mass2, mass3) %>%
-  group_by(Taxon) %>%
-  summarise(Seed.mass = mean(Seed.mass)) -> mass
-
-rm(mass1, mass2, mass3)
-
-# Lifeforms
-
-read.csv("../#data/lifeforms/results/lifeforms.csv") %>%
-  rename(Taxon = TPLName) -> lifeforms
-
-# Seed number
-
-read.csv("../#data/leda/results/leda.csv") %>%
-  rename(Taxon = TPLName) -> numbers
-
-# Merge species traits
-
-dominances %>%
-  filter(Abundance >= 2) %>%
-  merge(lifeforms, all.x = TRUE) %>%
-  merge(sncs, all.x = TRUE) %>%
-  merge(mass, all.x = TRUE) %>%
-  merge(numbers, all.x = TRUE) %>%
-  merge(read.csv("../#data/tpl/results/TPLNames.csv")) %>%
-  select(Taxon, Family, Lifeform, Abundance, bio06, bio14, pH, Seed.mass, Seed.number) %>%
-  mutate(Lifeform = ifelse(Taxon %in% c("Avenula pubescens",
-                                        "Galium mollugo",
-                                        "Knautia nevadensis",
-                                        "Leucanthemum vulgare",
-                                        "Lotus tenuis",
-                                        "Medicago sativa",
-                                        "Onobrychis viciifolia",
-                                        "Phleum pratense",
-                                        "Salvia pratensis",
-                                        "Schedonorus arundinaceus",
-                                        "Schedonorus pratensis",
-                                        "Taraxacum officinale",
-                                        "Trifolium montanum",
-                                        "Bistorta officinalis",
-                                        "Centaurea debeauxii",
-                                        "Galium lucidum",
-                                        "Onobrychis supina"), "Hemicryptophyte", Lifeform),
-         Lifeform = ifelse(Taxon %in% c("Thalictrum tuberosum"), "Geophyte", Lifeform),
-         Lifeform = ifelse(Taxon %in% c("Lolium multiflorum",
-                                        "Rhinanthus angustifolius",
-                                        "Rhinanthus mediterraneus"), "Therophyte", Lifeform)) -> traits
-
-traits %>%
-  select(Taxon) %>%
-  merge(read.csv("../#data/tpl/results/TPLNames.csv"), all.x = TRUE) %>%
-  mutate(TPLName = paste(New.Genus, New.Species, sep = " ")) %>% 
-  pull(TPLName) -> Names
-
-rm(dominances, morphometrics, mass, numbers, sncs, lifeforms)
-
 # Clean germination data from SOS PRADERAS
 
 read.csv("../#data/germination/data/sospraderas/IDs.csv") %>% # File with the different IDs used during the project
@@ -257,7 +177,7 @@ read.csv("../#data/germination/data/sospraderas/IDs.csv") %>% # File with the di
 
 # Germination data from Enscobase (Angelino Carta)
 
-read.csv("../#data/germination/data/enscobase meadows/Species_domimance_in_ENSCOBASE.csv") %>% 
+read.csv("../#data/germination/data/enscobase meadows/Species_domimance_in_ENSCOBASE.csv") %>%
   filter(aged == 0) %>% # Remove ageing experiments
   filter(chemical != "KNO3") %>% # remove, rare treatment
   mutate(Taxon = gsub("_", " ", animal)) %>% # Original taxon name follows EuroMed
@@ -277,7 +197,32 @@ read.csv("../#data/germination/data/enscobase meadows/Species_domimance_in_ENSCO
          Scarification, Stratification, GA3,
          Tmean, Alternating, Light,
          Germinated, Germinable) ->
-  germination2
+  germination2a
+
+# Germination data from Enscobase (Angelino Carta) 2nd version
+
+read.csv("../#data/germination/data/enscobase meadows/data.meadows_second.version.csv") %>% 
+  filter(aged == 0) %>% # Remove ageing experiments
+  filter(chemical != "KNO3") %>% # remove, rare treatment
+  mutate(Taxon = gsub("_", " ", animal)) %>% # Original taxon name follows EuroMed
+  mutate(Stratification = ifelse(cold2 == 1 | warm2 == 1, 1, 0)) %>% # Binary stratification yes/no
+  mutate(GA3 = ifelse(chemical == "GA3", 1, 0)) %>% # Binary GA3 yes/no
+  mutate(Database = "Enscobase") %>%
+  rename(Population = acc.orig, # Seedlot ID
+         Reference = germ_inst, # Reference or Lab ID
+         Country = country_collection, # Country of collection
+         Tmean = T2, # Mean germination temperature
+         Light = L2,
+         Alternating = Alt2,
+         Scarification = scarification,
+         Germinated = y,
+         Germinable = n) %>%
+  select(Taxon, Database, Reference, Country, Population,
+         Scarification, Stratification, GA3,
+         Tmean, Alternating, Light,
+         Germinated, Germinable) %>% 
+  filter(! Taxon %in% germination2a$Taxon) ->
+  germination2b
 
 # Germination from SylvanSeeds
 
@@ -301,7 +246,7 @@ read.csv("../#data/germination/results/TBMF_Database.csv") %>%
 
 # Merge databases
 
-rbind(germination1, germination2, germination3) %>%
+rbind(germination1, germination2a, germination2b, germination3) %>%
   mutate(Country = ifelse(Country == "United-Kingdom", "UK", Country)) %>%
   mutate(Country = ifelse(Country == "España", "Spain", Country)) %>%
   mutate(Country = ifelse(Country == "Francia", "France", Country)) %>%
@@ -311,51 +256,195 @@ rbind(germination1, germination2, germination3) %>%
            Scarification, Stratification, GA3,
            Tmean, Alternating, Light) %>%
   summarise(Germinated = sum(Germinated), Germinable = sum(Germinable)) %>% # Merge dishes
-  filter(Taxon %in% traits$Taxon) %>%
-  group_by() -> germination
+  merge(read.csv("../#data/tpl/results/TPLNames.csv"), all.x = TRUE) %>%
+  group_by() %>% 
+  select(Taxon, Family, Database:Germinable) -> germination
 
-rm(germination1, germination2, germination3, seedlots)
+# Clean morphometric analysis data
+
+read.csv("../#data/germination/data/sospraderas/Accesiones morfo.csv") %>% # Seedlot information for the morphological analysis
+  filter(Tipo.de.espécies == "Espécies silvestres") %>% # Commercial seed lots of the project, are of no interest here
+  dplyr::select(ID, Label) %>% 
+  merge(read.csv("../#data/germination/data/sospraderas/Análise morfométrica.csv"), by = "Label") %>% # Results of the morphometric analysis as provided by Madalena Vaz
+  dplyr::select(-c(Label, X.1)) %>%
+  rename(Seedlot = ID) %>% # This is the seedlot ID code as used in the final report of the project
+  merge(seedlots, by = "Seedlot") %>%
+  rename(Taxon = Species) %>%
+  group_by(Taxon) %>%
+  select(Taxon, Country, Seedlot, Height, Width) %>%
+  rename(Population = Seedlot, Length = Height) %>%
+  filter(Width < 2*Length) %>%
+  merge(read.csv("../#data/tpl/results/TPLNames.csv"), all.x = TRUE) %>%
+  select(Taxon, Family, Population, Length, Width) -> morpho
+
+# Clean seed mass
+
+read.csv("../#data/germination/data/enscobase meadows/Species_domimance_in_ENSCOBASE.csv") %>%
+  mutate(Taxon = gsub("_", " ", animal)) %>%
+  select(Taxon, mass) %>% 
+  rename(Seed.mass = mass) %>%
+  unique -> mass1a
+
+read.csv("../#data/germination/data/enscobase meadows/data.meadows_second.version.csv") %>%
+  mutate(Taxon = gsub("_", " ", animal)) %>%
+  select(Taxon, mass) %>% 
+  rename(Seed.mass = mass) %>%
+  unique -> mass1b
+
+read.csv("../#data/germination/data/sospraderas/SID Seed Mass.csv") %>%
+  rename(Taxon = Species,
+         Seed.mass = Seed.mass.mg) -> mass2
+
+read.csv("../#data/seedmass/results/seedmass.csv") %>%
+  rename(Taxon = TPLName) %>%
+  filter(Taxon %in% species$Species) -> mass3
+
+rbind(mass1a, mass1b, mass2, mass3) %>%
+  group_by(Taxon) %>%
+  summarise(Seed.mass = mean(Seed.mass)) -> mass
+
+rm(mass1a, mass1b, mass2, mass3)
+
+# Lifeforms
+
+read.csv("../#data/lifeforms/results/lifeforms.csv") %>%
+  rename(Taxon = TPLName) -> lifeforms
+
+# Seed number
+
+read.csv("../#data/leda/results/leda.csv") %>%
+  rename(Taxon = TPLName) -> numbers
+
+# Germination traits
+
+rbind(germination1, germination2a, germination3) %>%
+  mutate(Country = ifelse(Country == "United-Kingdom", "UK", Country)) %>%
+  mutate(Country = ifelse(Country == "España", "Spain", Country)) %>%
+  mutate(Country = ifelse(Country == "Francia", "France", Country)) %>%
+  filter(Germinated <= Germinable) %>% # Check no cases of more germination than seeds
+  filter(Germinable > 0) %>% # At least one germinable seed!
+  group_by(Taxon, Database, Reference, Country, Population,
+           Scarification, Stratification, GA3,
+           Tmean, Alternating, Light) %>%
+  summarise(Germinated = sum(Germinated), Germinable = sum(Germinable)) %>% # Merge dishes
+  group_by() %>%
+  mutate(Germination = Germinated / Germinable) %>%
+  group_by(Taxon) %>%
+  summarise(Temperature = weighted.mean(Tmean, w = Germination),
+            Alternating = weighted.mean(Alternating, w = Germination),
+            Light = weighted.mean(Light, w = Germination),
+            Scarification = weighted.mean(Scarification, w = Germination),
+            Stratification = weighted.mean(Stratification, w = Germination),
+            GA3 = weighted.mean(GA3, w = Germination)) -> gtraits
+
+rm(germination1, germination2a, germination2b, germination3)
+
+# Merge species traits (PCA1)
+
+dominances %>%
+  merge(lifeforms, all.x = TRUE) %>%
+  merge(sncs, all.x = TRUE) %>%
+  merge(mass, all.x = TRUE) %>%
+  merge(numbers, all.x = TRUE) %>%
+  merge(gtraits, all.x = TRUE) %>%
+  merge(read.csv("../#data/tpl/results/TPLNames.csv")) %>%
+  select(Taxon, Family, Lifeform, Abundance, bio06, bio14, pH, Seed.mass, Seed.number, Temperature:Stratification) %>%
+  mutate(Lifeform = ifelse(Taxon %in% c("Avenula pubescens",
+                                        "Galium mollugo",
+                                        "Knautia nevadensis",
+                                        "Leucanthemum vulgare",
+                                        "Lotus tenuis",
+                                        "Medicago sativa",
+                                        "Onobrychis viciifolia",
+                                        "Phleum pratense",
+                                        "Salvia pratensis",
+                                        "Schedonorus arundinaceus",
+                                        "Schedonorus pratensis",
+                                        "Taraxacum officinale",
+                                        "Trifolium montanum",
+                                        "Bistorta officinalis",
+                                        "Centaurea debeauxii",
+                                        "Galium lucidum",
+                                        "Onobrychis supina"), "Hemicryptophyte", Lifeform),
+         Lifeform = ifelse(Taxon %in% c("Thalictrum tuberosum"), "Geophyte", Lifeform),
+         Lifeform = ifelse(Taxon %in% c("Lolium multiflorum",
+                                        "Rhinanthus angustifolius",
+                                        "Rhinanthus mediterraneus"), "Therophyte", Lifeform)) %>%
+  filter(Abundance > 2)  %>%
+  select(Taxon, Family, Temperature:Stratification, Seed.mass, Seed.number, bio06:pH) -> traits
+
+traits %>%
+  select(Taxon) %>%
+  merge(read.csv("../#data/tpl/results/TPLNames.csv"), all.x = TRUE) %>%
+  mutate(TPLName = paste(New.Genus, New.Species, sep = " ")) %>% 
+  pull(TPLName) -> Names
+
+rm(dominances, morphometrics, mass, numbers, sncs, lifeforms, gtraits, seedlots)
+
+# Clean data for habitat comparison (PCA2)
+
+traits %>%
+  select(Taxon, Family) %>%
+  merge(germination) %>%
+  filter(Reference == "SOSPRADERAS") %>%
+  filter(GA3 == 0) %>%
+  filter((Family == "Leguminosae" & Scarification == 1) | Family != "Leguminosae") %>%
+  group_by(Taxon, Tmean) %>%
+  summarise(G = sum(Germinated) / sum(Germinable)) %>%
+  spread(Tmean, G) %>%
+  group_by(Taxon) %>%
+  mutate(Habitat = "Mesic meadows") %>%
+  rename(F14 = `9`, F22 = `17`, F30 = `25`) %>%
+  select(Taxon, Habitat, F14:F30) %>%
+  rbind(read.csv("data/others.csv")) %>%
+  group_by() -> habitats
 
 # Phylogenetic tree
 
-# traits %>%
-#   filter(Taxon %in% germination$Taxon) %>%
-#   separate(Taxon, into = c("Genus", "Species"), sep = " ") %>%
-#   mutate(species = paste(Genus, Species),
-#          genus = Genus,
-#          family = Family) %>%
-#   select(species, genus, family) %>%
-#   unique %>%
-#   mutate(family = fct_recode(family, 
-#                              "Asteraceae" = "Compositae",
-#                              "Fabaceae" = "Leguminosae",
-#                              "Asphodelaceae" = "Xanthorrhoeaceae")) %>%
-#   arrange(species) %>%
-#   na.omit -> 
-#   ranks1
-# 
-# library(V.PhyloMaker)
-# 
-# phylo.maker(sp.list = ranks1, 
-#             tree = GBOTB.extended, 
-#             nodes = nodes.info.1, 
-#             scenarios = "S3") ->
-#   tree
-# 
-# rm(ranks1)
+traits %>%
+  filter(Taxon %in% germination$Taxon) %>%
+  separate(Taxon, into = c("Genus", "Species"), sep = " ") %>%
+  mutate(species = paste(Genus, Species),
+         genus = Genus,
+         family = Family) %>%
+  select(species, genus, family) %>%
+  unique %>%
+  mutate(family = fct_recode(family,
+                             "Asteraceae" = "Compositae",
+                             "Fabaceae" = "Leguminosae",
+                             "Asphodelaceae" = "Xanthorrhoeaceae")) %>%
+  arrange(species) %>%
+  na.omit ->
+  ranks1
+
+library(V.PhyloMaker)
+
+phylo.maker(sp.list = ranks1,
+            tree = GBOTB.extended,
+            nodes = nodes.info.1,
+            scenarios = "S3") ->
+  tree
+
+rm(ranks1)
 
 # Save
 
-# write.tree(tree$scenario.3, file = "data/meadowstree.tree")
-write.csv(germination, file = "data/germination.csv", row.names = FALSE)
+write.tree(tree$scenario.3, file = "data/meadowstree.tree")
+
+germination %>%
+  filter(Taxon %in% spplist$Taxon) %>%
+  write.csv(file = "data/european.csv", row.names = FALSE)
 # header %>%
 #   write.csv(file = "data/header.csv", row.names = FALSE)
 # species %>%
 #   write.csv(file = "data/species.csv", row.names = FALSE)
 morpho %>% 
-  filter(Taxon %in% traits$Taxon) %>%
-  arrange(Taxon) %>%
   write.csv(file = "data/morphometrics.csv", row.names = FALSE)
 traits %>%
   arrange(Taxon) %>%
-  write.csv(file = "data/traits.csv", row.names = FALSE)
+  na.omit() %>%
+  write.csv(file = "data/iberian.csv", row.names = FALSE)
+habitats %>%
+  arrange(Taxon) %>%
+  write.csv(file = "data/cantabrian.csv", row.names = FALSE)
+
