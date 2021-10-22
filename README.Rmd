@@ -9,9 +9,9 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ![Hay meadow from the Cantabrian Mountains](meadow.JPG)
 
-# Seed ecology of European mesic meadows
+# Seed ecology of European mesic grasslands
 
-This repository stores all the information related to the manuscript *Seed ecology of European mesic meadows*, including the raw datasets, the scripts to perform data cleaning and analysis, and the `Rmarkdown` files to create the manuscript.
+This repository stores all the information related to the manuscript *Seed ecology of European mesic grasslands*, including the raw datasets, the scripts to perform data cleaning and analysis, and the `Rmarkdown` files to create the manuscript.
 
 ## Contents
 
@@ -20,11 +20,11 @@ This repository is organised following the advice of [Wilson et al. 2017](https:
 
 The following materials are available in the folders of this repository:
 
-* `data` Data files including the seed trait datasets (European, Iberian and Cantabrian) and the phylogenetic tree.
+* `data` Data files including the seed germination dataset, the species traits, and the phylogenetic tree.
 * `doc` Files to create the manuscript using `Rmarkdown`.
 * `results` Output of the `R` scripts, including figures and models.
 * `src` Scripts in `R` language used to clean the raw data and perform the analyses of the manuscript.
 
 ## Citation
 
-Please cite the dataset as `CITATION`
+Please cite the dataset as `Fernández-Pascual E, Vaz M, Morais B, Reiné R, Ascaso J, Afif Khouri E, Carta A. Seed germination ecology of European mesic grasslands. Annals of Botany, in press.`
