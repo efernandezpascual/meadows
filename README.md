@@ -1,6 +1,8 @@
 README.md
 ================
 
+[![DOI](https://zenodo.org/badge/349511614.svg)](https://doi.org/10.5281/zenodo.5602741)
+
 ![Hay meadow from the Cantabrian Mountains](meadow.JPG)
 
 # Seed ecology of European mesic meadows
