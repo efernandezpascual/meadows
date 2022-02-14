@@ -1,7 +1,7 @@
 README.md
 ================
 
-[![DOI](https://zenodo.org/badge/349511614.svg)](https://doi.org/10.5281/zenodo.5602741)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6077618.svg)](https://doi.org/10.5281/zenodo.6077618)
 
 ![Hay meadow from the Cantabrian Mountains](meadow.JPG)
 
