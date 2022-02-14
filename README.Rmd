@@ -36,4 +36,4 @@ The following materials are available in the folders of this repository:
 
 Please cite the repository, datasets and article as: 
 
-> Fernández-Pascual E, Vaz M, Morais B, Reiné R, Ascaso J, Afif Khouri E, Carta A. [Seed germination ecology of European mesic meadows.](https://dx.doi.org/10.1093/aob/mcab135) *Annals of Botany*, in press.
+> Fernández-Pascual E, Vaz M, Morais B, Reiné R, Ascaso J, Afif Khouri E, Carta A. [Seed ecology of European mesic meadows.](https://dx.doi.org/10.1093/aob/mcab135) *Annals of Botany* 129, 121-133.

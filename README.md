@@ -19,7 +19,7 @@ and storing research projects.
 
 The following materials are available in the folders of this repository:
 
-  - `data` Data files including the
+-   `data` Data files including the
     [European](https://github.com/efernandezpascual/meadows/blob/master/data/european.csv),
     [Iberian](https://github.com/efernandezpascual/meadows/blob/master/data/iberian.csv)
     and
@@ -28,23 +28,23 @@ The following materials are available in the folders of this repository:
     morphometrics](https://github.com/efernandezpascual/meadows/blob/master/data/morphometrics.csv)
     and the [phylogenetic
     tree](https://github.com/efernandezpascual/meadows/blob/master/data/meadowstree.tree).
-  - `doc` Files to create the
+-   `doc` Files to create the
     [manuscript](https://github.com/efernandezpascual/meadows/blob/master/doc/manuscript.md)
     using `Rmarkdown`.
-  - `results` Output of the `R` scripts, including figures and models.
-  - `src` Scripts in `R` language used to clean the raw data and perform
+-   `results` Output of the `R` scripts, including figures and models.
+-   `src` Scripts in `R` language used to clean the raw data and perform
     the analyses of the manuscript.
 
 ## Abstract
 
-  - **Background and Aims** European mesic meadows are semi-natural open
+-   **Background and Aims** European mesic meadows are semi-natural open
     habitats of high biodiversity and an essential part of European
     landscapes. These species-rich communities can be a source of seed
     mixes for ecological restoration, urban greening and rewilding.
     However, limited knowledge of species germination traits is a
     bottleneck to the development of a competitive native seed industry.
     Here, we synthesize the seed ecology of mesic meadows.
-  - **Methods** We combined our own experimental data with data obtained
+-   **Methods** We combined our own experimental data with data obtained
     from databases to create a combined dataset containing 2,005
     germination records of 90 plant species from 31 European countries.
     We performed a Bayesian meta-analysis of this dataset to test the
@@ -55,7 +55,7 @@ The following materials are available in the folders of this repository:
     species ecological preferences, and to compare the seed ecology of
     mesic meadows with that of other herbaceous plant communities from
     the same area.
-  - **Key Results** The seed ecology of mesic meadows is characterized
+-   **Key Results** The seed ecology of mesic meadows is characterized
     by (1) high seed germinability when compared to other herbaceous
     plant communities; (2) low correspondence between seed traits and
     species ecological preferences; and (3) a deep phylogenetic
@@ -64,7 +64,7 @@ The following materials are available in the folders of this repository:
     germination cues (alternating temperatures and light); Fabaceae
     produce fewer heavy seeds, which need scarification to break their
     physical dormancy.
-  - **Conclusions** High germinability of meadow seeds will reduce their
+-   **Conclusions** High germinability of meadow seeds will reduce their
     capacity to form persistent seed banks, resulting in dispersal
     limitations to passive regeneration. For centuries, human activities
     have shaped the regeneration of meadows, leading to a loss of seed
@@ -79,6 +79,6 @@ The following materials are available in the folders of this repository:
 Please cite the repository, datasets and article as:
 
 > Fernández-Pascual E, Vaz M, Morais B, Reiné R, Ascaso J, Afif Khouri
-> E, Carta A. [Seed germination ecology of European mesic
-> meadows.](https://dx.doi.org/10.1093/aob/mcab135) *Annals of Botany*,
-> in press.
+> E, Carta A. [Seed ecology of European mesic
+> meadows.](https://dx.doi.org/10.1093/aob/mcab135) *Annals of Botany*
+> 129, 121-133.
